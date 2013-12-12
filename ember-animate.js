@@ -259,22 +259,21 @@
 
 		_currentViewDidChange : Ember.observer('currentView', function () {
 
-			var currentView = this.get("currentView");
+			var currentView = this.get("currentView"),
+				pushView = Ember.$.proxy(function () {
+					this.pushObject(currentView);
+					currentView._animateIn();
+				}, this);
 
 			if (currentView) {
 				Ember.assert("You tried to set a current view that already has a parent. Make sure you don't have multiple outlets in the same view.", !Ember.get(currentView, '_parentView'));
 				
-
 				if (this._oldView) {
-
-					this._oldView._animateOut(Ember.$.proxy(function () {
-						this.pushObject(currentView);
-						currentView._animateIn();
-					}, this));
+					this._oldView._animateOut(pushView);
 					return;
 				}
 
-				currentView._animateIn();
+				pushView();
 			}
 	 
 		})

@@ -56,7 +56,7 @@
 
 				else {
 					animation = {
-						className : animation[1],
+						className : animation[0],
 						duration : animation[1],
 						easing : null
 					}

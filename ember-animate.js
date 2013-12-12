@@ -4,11 +4,13 @@
 
 		isPrepped : false,
 		isAnimating : false,
+		cancelAnimation : false,
+
 		currentAnimationClass : "",
 
-		_inCB : null,
-		_outCB : null,
-		_prepCB : null,
+		_inCallbacks : [],
+		_outCallbacks : [],
+		_prepCallbacks : [],
 
 		classNameBindings: ['isAnimating:ember-animate',"currentAnimationClass"],
 
@@ -29,6 +31,25 @@
 				duration : 0,
 				easing : null,
 				delay : 0
+			}
+		},
+
+		init : function () {
+
+			this._inCallbacks = [];
+			this._outCallbacks = [];
+			this._prepCallbacks = [];
+
+			this._super();
+		},			
+
+		_runCallbacks : function (callbacks, cb) {
+			callbacks = callbacks || [];
+			while (callbacks.length) {
+				cb = callbacks.shift();
+				if (typeof cb === "function") {
+					cb();
+				}
 			}
 		},
 
@@ -61,6 +82,13 @@
 						easing : null
 					}
 				}
+			}
+
+			if (this.get("cancelAnimation")) {
+				if (typeof done === "function") {
+					done();
+				}
+				return;
 			}
 
 			Ember.assert('Invalidate animation', animation && typeof animation === "object");
@@ -165,20 +193,18 @@
 		_prepComplete : function () {
 			this.set("isPrepped", true);
 			this.prepComplete();
-			if (typeof this._prepCB === "function") {
-				this._prepCB();
-				this._prepCB = null;
-			}
+			this._runCallbacks(this._prepCallbacks);
 		},
 
 		_animateIn : function (cb) {
 			if (!this.get("isPrepped")) {
-				this._prepCB = Ember.$.proxy(function () {
+				this._prepCallbacks.push(Ember.$.proxy(function () {
 					this._animateIn(cb);
-				}, this);
+				}, this));
 				return;
 			}
-			this._inCB = cb;
+
+			this._inCallbacks.push(cb);
 
 			this.set("isAnimating", true);
 			this.animateIn(Ember.$.proxy(this._animateInComplete, this));
@@ -187,14 +213,22 @@
 		_animateInComplete : function () {
 			this.set("isAnimating", false);
 			this.animateInComplete();
-			if (typeof this._inCB === "function") {
-				this._inCB();
-				this._inCB = null;
-			}
+			this._runCallbacks(this._inCallbacks);
 		},
 
 		_animateOut : function (cb) {
-			this._outCB = cb;
+
+			if (this.get("isAnimating")) {
+				this._inCallbacks.push(Ember.$.proxy(function () {
+					this._animateOut(cb);
+				}, this));
+				this.set("cancelAnimation", true);
+				return;
+			}
+
+			this.set("cancelAnimation", false);
+
+			this._outCallbacks.push(cb);
 			this.set("isAnimating", true);
 			this.animateOut(Ember.$.proxy(this._animateOutComplete, this));
 		},
@@ -203,10 +237,7 @@
 			this.set("isAnimating", false);
 			this.animateOutComplete();
 			this.destroy();
-			if (typeof this._outCB === "function") {
-				this._outCB();
-				this._outCB = null;
-			}
+			this._runCallbacks(this._outCallbacks);
 		},
 
 		didInsertElement : function () {
@@ -241,7 +272,18 @@
 
 	Ember.ContainerView.reopen({
 
-		_oldView : null,
+		_activeView : null,
+		_isAnimatingOut : false,
+
+		_activeViewChanged : function () {
+
+			var view = this.get("_activeView");
+
+			if (view) {
+				view._animateIn();
+			}
+
+		}.observes("_activeView").on("init"),
 
 		init : function () {
 			this._super();
@@ -249,33 +291,37 @@
 			var currentView = this.get("currentView");
 
 			if (currentView) {
-				currentView._animateIn();
+				this.set("_activeView", currentView);
 			}
 		},	
 
 		_currentViewWillChange : Ember.beforeObserver('currentView', function () {
-			this._oldView = this.get("currentView");
+			//this._oldView = this.get("currentView");
 		}),
+
+		_pushNewView : function () {
+			var newView = this.get("newView");
+
+			this.pushObject(newView);
+			this.set("_activeView", newView);
+			this.set("_isAnimatingOut", false);
+		},
 
 		_currentViewDidChange : Ember.observer('currentView', function () {
 
-			var currentView = this.get("currentView"),
-				pushView = Ember.$.proxy(function () {
-					this.pushObject(currentView);
-					currentView._animateIn();
-				}, this);
+			var activeView = this.get("_activeView");
 
-			if (currentView) {
-				Ember.assert("You tried to set a current view that already has a parent. Make sure you don't have multiple outlets in the same view.", !Ember.get(currentView, '_parentView'));
+			this.set("newView", this.get("currentView"));
 				
-				if (this._oldView) {
-					this._oldView._animateOut(pushView);
-					return;
+			if (activeView) {
+				if (!this.get("_isAnimatingOut")) {
+					this.set("_isAnimatingOut", true);
+					activeView._animateOut(Ember.$.proxy(this._pushNewView, this));
 				}
-
-				pushView();
+				return;
 			}
-	 
+
+			this._pushNewView();	 
 		})
 	});
 

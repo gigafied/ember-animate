@@ -1,0 +1,25 @@
+{
+  "name": "ember-animate",
+  "main": "ember-animate.js",
+  "version": "0.0.1",
+  "homepage": "https://github.com/gigafied/ember-animate",
+  "authors": [
+    "Taka Kojima <taka@gigafied.com>"
+  ],
+  "description": "Animations for Ember.js",
+  "keywords": [
+    "ember.js",
+    "ember",
+    "animate",
+    "animations",
+    "transitions"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

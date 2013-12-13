@@ -97,7 +97,10 @@
 				this.set("currentAnimationClass", animation.className);
 			}
 
-			this.$().css(this._getAnimationCSSObject(animation));
+			this.$().css(this._getAnimationCSSObject(animation, true));
+			Ember.run.later(this, function () {
+				this.$().css(this._getAnimationCSSObject(animation));
+			});
 
 
 			if (typeof done === "function") {
@@ -144,7 +147,7 @@
 			return set("");
 		},
 
-		_getAnimationCSSObject : function (obj) {
+		_getAnimationCSSObject : function (obj, transitionOnly) {
 
 			var o = {},
 				p,
@@ -164,7 +167,9 @@
 
 			for (p in (obj.properties || {})) {
 				props.push(p);
-				o[p] = obj.properties[p];
+				if (!transitionOnly) {
+					o[p] = obj.properties[p];
+				}
 			}
 
 			if (!props.length) {
@@ -194,15 +199,10 @@
 			this.set("isPrepped", true);
 			this.prepComplete();
 			this._runCallbacks(this._prepCallbacks);
+			this._animateIn();
 		},
 
 		_animateIn : function (cb) {
-			if (!this.get("isPrepped")) {
-				this._prepCallbacks.push(Ember.$.proxy(function () {
-					this._animateIn(cb);
-				}, this));
-				return;
-			}
 
 			this._inCallbacks.push(cb);
 
@@ -236,7 +236,6 @@
 		_animateOutComplete : function () {
 			this.set("isAnimating", false);
 			this.animateOutComplete();
-			this.destroy();
 			this._runCallbacks(this._outCallbacks);
 		},
 
@@ -266,8 +265,17 @@
 
 		animateOutComplete : function () {
 
-		}
+		},
 
+		destroy : function (done) {
+			var _super = Ember.$.proxy(this._super, this);
+			this._animateOut(function () {
+				_super();
+				if (done && typeof done === "function") {
+					done();
+				}
+			});
+		}
 	});
 
 	Ember.ContainerView.reopen({
@@ -275,15 +283,6 @@
 		_activeView : null,
 		_isAnimatingOut : false,
 
-		_activeViewChanged : function () {
-
-			var view = this.get("_activeView");
-
-			if (view) {
-				view._animateIn();
-			}
-
-		}.observes("_activeView").on("init"),
 
 		init : function () {
 			this._super();
@@ -293,16 +292,19 @@
 			if (currentView) {
 				this.set("_activeView", currentView);
 			}
-		},	
+		},
 
 		_currentViewWillChange : Ember.beforeObserver('currentView', function () {
-			//this._oldView = this.get("currentView");
+			
 		}),
 
 		_pushNewView : function () {
 			var newView = this.get("newView");
 
-			this.pushObject(newView);
+			if (newView) {
+				this.pushObject(newView);
+			}
+
 			this.set("_activeView", newView);
 			this.set("_isAnimatingOut", false);
 		},
@@ -316,12 +318,12 @@
 			if (activeView) {
 				if (!this.get("_isAnimatingOut")) {
 					this.set("_isAnimatingOut", true);
-					activeView._animateOut(Ember.$.proxy(this._pushNewView, this));
+					activeView.destroy(Ember.$.proxy(this._pushNewView, this));
 				}
 				return;
 			}
 
-			this._pushNewView();	 
+			this._pushNewView();
 		})
 	});
 

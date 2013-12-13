@@ -10,6 +10,15 @@
 
 <hr>
 
+#### DEMO
+
+I use Ember Animate on my personal site to transition between pages. Click the "about", "work" and "contact" links to see it in action.
+
+http://www.gigafied.com/
+
+<hr>
+
+
 Ember Animate let's you easily add complex animations and transitions to Ember Views.
 
 It works by changing how Ember interacts with the DOM on view changes. Instead of just removing the old view and adding the new view. It animates the old view out, then removes it, then adds the new view and animates it in.

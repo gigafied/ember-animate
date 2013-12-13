@@ -12,9 +12,8 @@
 
 #### DEMO
 
-I use Ember Animate on my personal site to transition between pages. Click the "about", "work" and "contact" links to see it in action.
+I use Ember Animate on my <a href="http://www.gigafied.com/" target="_blank">personal site</a> to transition between pages. Click the "about", "work" and "contact" links to see it in action.
 
-http://www.gigafied.com/
 
 <hr>
 

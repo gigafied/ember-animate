@@ -26,7 +26,7 @@ It works by changing how Ember interacts with the DOM on view changes. Instead o
 
 	$ bower install ember-animate
 	
-or you can download [ember-animate.js](https://raw.github.com/gigafied/ember-aniamte/master/ember-animate.js) and save it to your project folder.
+or you can download [ember-animate.js](https://raw.github.com/gigafied/ember-animate/master/ember-animate.js) and save it to your project folder.
 
 ##### Include the JavaScript File 
 

@@ -16,22 +16,8 @@
 
 		animations : {
 
-			animateIn : {
-				className : null,
-				properties : {
-				},
-				duration : 0,
-				easing : null,
-				delay : 0
-			},
-
-			animateOut : {
-				className : null,
-				properties : {},
-				duration : 0,
-				easing : null,
-				delay : 0
-			}
+			animateIn : null,
+			animateOut : null
 		},
 
 		init : function () {
@@ -56,6 +42,7 @@
 		_runAnimation : function (animation, done) {
 
 			var i,
+				$el,
 				self = this;
 
 			if (typeof animation === "string") {
@@ -91,22 +78,26 @@
 				return;
 			}
 
-			Ember.assert('Invalidate animation', animation && typeof animation === "object");
+			if (animation) {
 
-			if (animation.className) {
-				this.set("currentAnimationClass", animation.className);
+				Ember.assert('Invalid animation', animation && typeof animation === "object");
+
+				if (animation.className) {
+					this.set("currentAnimationClass", animation.className);
+				}
+
+				$el = animation.selector ? this.$().find(animation.selector) : this.$();
+				
+				$el.css(this._getAnimationCSSObject(animation, true));
+				Ember.run.later(this, function () {
+					$el.css(this._getAnimationCSSObject(animation));
+				});
 			}
 
-			this.$().css(this._getAnimationCSSObject(animation, true));
-			Ember.run.later(this, function () {
-				this.$().css(this._getAnimationCSSObject(animation));
-			});
-
-
 			if (typeof done === "function") {
-				if (animation.duration) {
+				if (animation && animation.duration) {
 					Ember.run.later(this, function () {
-						this.$().css(this._getAnimationCSSObject({duration : "", easing : "", delay : ""}));
+						$el.css(this._getAnimationCSSObject({duration : "", easing : "", delay : ""}));
 						this.set("currentAnimationClass", "");
 						done();
 					}, animation.duration + (animation.delay || 0));

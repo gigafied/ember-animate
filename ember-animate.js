@@ -1,12 +1,10 @@
 (function () {
 
-	var get = Ember.get,
-		set = Ember.set,
-		run = function (fn) {
-			if (typeof fn === 'function') {
-				return fn();
-			}
-		};
+	var run = function (fn) {
+		if (fn && typeof fn === 'function') {
+			return fn();
+		}
+	};
 
 	Ember.View.reopen({
 
@@ -14,16 +12,17 @@
 		isAnimatingOut : false,
 
 		_afterRender : function () {
-			this.willAnimateIn():
-			this.set('isAnimatingIn', true);
-			this.animateIn(function () {
-				this.set('isAnimatingIn', false);
-				this.didAnimateIn();
+			var self = this;
+			self.willAnimateIn();
+			self.set('isAnimatingIn', true);
+			self.animateIn(function () {
+				self.set('isAnimatingIn', false);
+				self.didAnimateIn();
 			});
 		},
 
 		didInsertElement : function () {
-			Ember.run.scheduleOnce('afterRender', this, this._afterRender);
+			Ember.run.schedule('afterRender', this, this._afterRender);
 			return this._super();
 		},
 
@@ -42,13 +41,16 @@
 
 		destroy : function (done) {
 
-			this.willAnimateOut();
-			this.set('isAnimatingOut', true);
-			this.animateOut(function () {
-				this.set('isAnimatingOut', false);
-				this.didAnimateOut();
-				_super();
+			var self = this,
+				_super = Ember.$.proxy(this._super, this);
+
+			self.willAnimateOut();
+			self.set('isAnimatingOut', true);
+			self.animateOut(function () {
+				self.set('isAnimatingOut', false);
+				self.didAnimateOut();
 				run(done);
+				_super();
 			});
 
 			return this;
@@ -76,10 +78,12 @@
 
 		_currentViewDidChange : Ember.observer('currentView', function () {
 
-			var newView,
+			var self,
+				newView,
 				oldView,
 				removeOldView;
 
+			self = this;
 			oldView = this.get('activeView');
 			newView = this.get('currentView');
 
@@ -92,12 +96,14 @@
 				}
 
 				if (oldView.get('isAnimatingIn')) {
-					oldView.addObserver('isAnimatingIn', this, '_currentViewDidChange');
+					oldView.addObserver('isAnimatingIn', self, '_currentViewDidChange');
 					return;
 				}
 
-				oldView.removeObserver('isAnimatingIn', this, '_currentViewDidChange');
-				oldView.destroy(this._pushNewView);
+				oldView.removeObserver('isAnimatingIn', self, '_currentViewDidChange');
+				oldView.destroy(function () {
+					self._pushNewView.apply(self);
+				});
 			};
 
 			if (oldView) {
@@ -108,8 +114,13 @@
 		}),
 
 		_pushNewView : function () {
+
 			var newView = this.get('newView');
-			this.pushObject(newView);
+
+			if (newView) {
+				this.pushObject(newView);
+			}
+
 			this.set("activeView", newView);
 		}
 	});

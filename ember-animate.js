@@ -12,12 +12,17 @@
 		isAnimatingOut : false,
 
 		_afterRender : function () {
+
 			var self = this;
+
 			self.willAnimateIn();
 			self.set('isAnimatingIn', true);
-			self.animateIn(function () {
-				self.set('isAnimatingIn', false);
-				self.didAnimateIn();
+
+			Ember.run.next(function () {
+				self.animateIn(function () {
+					self.set('isAnimatingIn', false);
+					self.didAnimateIn();
+				});
 			});
 		},
 
@@ -46,11 +51,14 @@
 
 			self.willAnimateOut();
 			self.set('isAnimatingOut', true);
-			self.animateOut(function () {
-				self.set('isAnimatingOut', false);
-				self.didAnimateOut();
-				run(done);
-				_super();
+
+			Ember.run.next(function () {
+				self.animateOut(function () {
+					self.set('isAnimatingOut', false);
+					self.didAnimateOut();
+					run(done);
+					_super();
+				});
 			});
 
 			return this;

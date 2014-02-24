@@ -52,13 +52,11 @@
 			self.willAnimateOut();
 			self.set('isAnimatingOut', true);
 
-			Ember.run.next(function () {
-				self.animateOut(function () {
-					self.set('isAnimatingOut', false);
-					self.didAnimateOut();
-					run(done);
-					_super();
-				});
+			self.animateOut(function () {
+				self.set('isAnimatingOut', false);
+				self.didAnimateOut();
+				run(done);
+				_super();
 			});
 
 			return this;

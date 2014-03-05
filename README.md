@@ -12,7 +12,7 @@ _____________________
 - No special `{{outlet}}` needed
 - No extra methods to call
 - Easy to plugin to existing Ember Application without major refactor
- 
+
 _____________________
 #### Getting Started
 
@@ -51,7 +51,7 @@ That's it! Super easy!
 
 #####`willAnimateIn()`
 
-Called before `animateIn()`. Lets you set CSS properties before the view actually gets rendered. Use this to set the starting point for your `animateIn()`. 
+Called before `animateIn()`. Lets you set CSS properties before the view actually gets rendered. Use this to set the starting point for your `animateIn()`.
 
 You can get accurate calculated properties here (i.e. width and height).
 
@@ -78,7 +78,7 @@ Use this hook to animate out. Just make sure to call the callback function once 
 _______________
 
 #####IMPORTANT NOTE : When using Ember Animate, don't implement custom `destroy()` methods. Any teardown logic for views should be moved to `didAnimateOut()`. The reason for this is the animation out is triggered by the `destroy()` method (because this isn't an offical part of Ember, it's the only way to ensure all views get their animations triggered when being removed from the DOM).
-
+Also if you implement `willInsertElement()` make sure you call `this._super()`. However, in almost all instances you could just use `willAnimateIn()` as a hook instead.
 _______________
 
 #### How do I animate my Routes?

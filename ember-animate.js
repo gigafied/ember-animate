@@ -28,7 +28,7 @@
 			});
 		},
 
-		didInsertElement : function () {
+		willInsertElement : function () {
 			Ember.run.schedule('afterRender', this, this._afterRender);
 			return this._super();
 		},

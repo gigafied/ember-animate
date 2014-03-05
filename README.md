@@ -47,7 +47,7 @@ App.ExampleView = Ember.View.extend({
 
 That's it! Super easy!
 
-####Ember Animate exposes 6 different hooks for you:
+####Ember Animate exposes 6 different methods for you:
 
 #####`willAnimateIn()`
 

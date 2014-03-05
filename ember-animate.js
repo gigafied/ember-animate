@@ -15,7 +15,7 @@
 
 			var self = this;
 
-			this.__$ = this.$();
+			this.$el = this.$();
 
 			self.willAnimateIn();
 			self.set('isAnimatingIn', true);
@@ -49,11 +49,11 @@
 		destroy : function (done) {
 
 			var self = this,
-				_super = Ember.$.proxy(this._super, this);
+				_super = Ember.$.proxy(self._super, self);
 
-			if (!this.$()) {
-				this.$ = function () {
-					return self.__$;
+			if (!self.$()) {
+				self.$ = function () {
+					return self.$el;
 				}
 			}
 
@@ -62,16 +62,16 @@
 
 			self.animateOut(function () {
 
-				delete self.__$;
-				delete self.$;
-
 				self.set('isAnimatingOut', false);
 				self.didAnimateOut();
 				run(done);
 				_super();
+
+				delete self.$;
+				delete self.$el;
 			});
 
-			return this;
+			return self;
 		}
 	});
 

@@ -17,19 +17,26 @@
 
 			this.$el = this.$();
 
-			self.willAnimateIn();
-			self.set('isAnimatingIn', true);
+			if (!self.get('isDestroyed')) {
 
-			Ember.run.next(function () {
-				self.animateIn(function () {
-					self.set('isAnimatingIn', false);
-					self.didAnimateIn();
+				self.willAnimateIn();
+				self.set('isAnimatingIn', true);
+
+				Ember.run.next(function () {
+
+					if (!self.get('isDestroyed')) {
+
+						self.animateIn(function () {
+							self.set('isAnimatingIn', false);
+							self.didAnimateIn();
+						});
+					}
 				});
-			});
+			}
 		},
 
 		willInsertElement : function () {
-			Ember.run.schedule('afterRender', this, this._afterRender);
+			Ember.run.scheduleOnce('afterRender', this, this._afterRender);
 			return this._super();
 		},
 

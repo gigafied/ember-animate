@@ -58,6 +58,19 @@
 			var self = this,
 				_super = Ember.$.proxy(self._super, self);
 
+			if (self.get('isAnimatingOut')) {
+				return;
+			}
+
+			if (!self.$el || self.get('isDestroyed')) {
+
+				if (typeof done === 'function') {
+					done();
+				}
+
+				return _super();
+			}
+
 			if (!self.$()) {
 				self.$ = function () {
 					return self.$el;

@@ -12,6 +12,7 @@ _____________________
 - No special `{{outlet}}` needed
 - No extra methods to call
 - Easy to plugin to existing Ember Application without major refactor
+- Animation sequences!
 
 _____________________
 #### Getting Started
@@ -74,6 +75,17 @@ Use this hook to animate in. Just make sure to call the callback function once y
 #####`animateOut(callback)`
 
 Use this hook to animate out. Just make sure to call the callback function once your animation completes.
+
+####Animation Sequences
+
+By default, outlets and ContainerViews use the 'sync' animationSequence. This is out-then-in and is the most common use case. However, you can have your out and in animations trigger at the same time if you want by using 'async'. You can also have your views animate in then out by using 'reverse'.
+
+	{{outlet animationSequence="async"}}
+	{{outlet animationSequence="reverse"}}
+or
+
+	Ember.ContainerView.extend({animationSequence : 'async'});
+	Ember.ContainerView.extend({animationSequence : 'reverse'});
 
 _______________
 

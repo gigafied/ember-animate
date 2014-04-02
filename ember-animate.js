@@ -1,5 +1,8 @@
 (function () {
 
+	var run,
+		destroying$;
+
 	var run = function (fn) {
 		if (fn && typeof fn === 'function') {
 			return fn();
@@ -10,6 +13,8 @@
 
 		isAnimatingIn : false,
 		isAnimatingOut : false,
+
+		_animateOutCallbacks : null,
 
 		_afterRender : function () {
 
@@ -45,55 +50,78 @@
 		didAnimateIn : Ember.K,
 		didAnimateOut : Ember.K,
 
-		animateIn : function (done) {
-			run(done);
-		},
-
-		animateOut : function (done) {
-			run(done);
-		},
+		animateIn : run,
+		animateOut : run,
 
 		destroy : function (done) {
 
-			var self = this,
-				_super = Ember.$.proxy(self._super, self);
-
-			if (self.get('isAnimatingOut')) {
-				return;
+			if (!this.hasAnimatedOut && this.animateOut !== run && this.$el) {
+				this.removedFromDOM = false;
+				this.transitionTo('inDOM');
 			}
 
-			if (!self.$el || self.get('isDestroyed')) {
-
-				if (typeof done === 'function') {
-					done();
-				}
-
-				return _super();
-			}
-
-			if (!self.$()) {
-				self.$ = function () {
-					return self.$el;
-				}
-			}
-
-			self.willAnimateOut();
-			self.set('isAnimatingOut', true);
-
-			self.animateOut(function () {
-
-				self.set('isAnimatingOut', false);
-				self.didAnimateOut();
+			else if (this.state === 'destroying') {
 				run(done);
-				_super();
+				done = null;
+			}
 
-				delete self.$;
-				delete self.$el;
-			});
+			this._animateOutCallbacks = this._animateOutCallbacks || [];
 
-			return self;
+			if (typeof done === 'function') {
+				this._animateOutCallbacks.push(done);
+			}
+
+			return this._super();
 		}
 	});
+
+	Ember.View.states.hasElement.destroyElement = function (view) {
+
+		var self = this;
+
+		function done () {
+
+			var i;
+
+			view._notifyWillDestroyElement();
+
+			if (view.$el) {
+				view.$el.remove();
+			}
+
+			view.$el = null;
+			view.hasAnimatedOut = true;
+
+			Ember.run.once(Ember.View, 'notifyMutationListeners');
+
+			for (i = 0; i < view._animateOutCallbacks.length; i ++) {
+				run(view._animateOutCallbacks[i]);
+			}
+		};
+
+		if (view.$el) {
+
+			if (!view.get('isAnimatingOut')) {
+				view.willAnimateOut();
+			}
+
+			view.animateOut(done);
+		}
+
+		else {
+			done();
+		}
+
+		view.set('isAnimatingOut', true);
+		view.set('element', null);
+
+		if (view._scheduledInsert) {
+			Ember.run.cancel(view._scheduledInsert);
+			view._scheduledInsert = null;
+		}
+
+		return view;
+	};
 
 	Ember.ContainerView.reopen({
 

@@ -13,7 +13,9 @@
 
 		isAnimatingIn : false,
 		isAnimatingOut : false,
+		hasAnimatedIn : false,
 
+		_animateInCallbacks : null,
 		_animateOutCallbacks : null,
 
 		_afterRender : function () {
@@ -22,18 +24,32 @@
 
 			this.$el = this.$();
 
-			if (!self.get('isDestroyed')) {
+			if (!self.isDestroyed) {
 
 				self.willAnimateIn();
-				self.set('isAnimatingIn', true);
+				self.isAnimatingIn = true;
+				self.hasAnimatedIn = false;
 
 				Ember.run.next(function () {
 
-					if (!self.get('isDestroyed')) {
+					if (!self.isDestroyed) {
 
 						self.animateIn(function () {
-							self.set('isAnimatingIn', false);
+
+							var i;
+
+							self.isAnimatingIn = false;
+							self.hasAnimatedIn = true;
 							self.didAnimateIn();
+
+							if (self._animateInCallbacks) {
+								for (i = 0; i < self._animateInCallbacks.length; i ++) {
+									run(self._animateInCallbacks[i]);
+								}
+							}
+
+							self._animateInCallbacks = null;
+
 						});
 					}
 				});
@@ -53,7 +69,29 @@
 		animateIn : run,
 		animateOut : run,
 
+		onAnimateIn : function (callback) {
+
+			this._animateInCallbacks = this._animateInCallbacks || [];
+
+			if (typeof callback === 'function') {
+				this._animateInCallbacks.push(callback);
+			}
+		},
+
+		onAnimateOut : function (callback) {
+
+			this._animateOutCallbacks = this._animateOutCallbacks || [];
+
+			if (typeof callback === 'function') {
+				this._animateOutCallbacks.push(callback);
+			}
+		},
+
 		destroy : function (done) {
+
+			var i;
+
+			this.onAnimateOut(done);
 
 			if (!this.hasAnimatedOut && this.animateOut !== run && this.$el) {
 				this.removedFromDOM = false;
@@ -61,14 +99,12 @@
 			}
 
 			else if (this.state === 'destroying') {
-				run(done);
-				done = null;
-			}
 
-			this._animateOutCallbacks = this._animateOutCallbacks || [];
+				for (i = 0; i < this._animateOutCallbacks.length; i ++) {
+					run(this._animateOutCallbacks[i]);
+				}
 
-			if (typeof done === 'function') {
-				this._animateOutCallbacks.push(done);
+				this._animateOutCallbacks = null;
 			}
 
 			return this._super();
@@ -97,11 +133,13 @@
 			for (i = 0; i < view._animateOutCallbacks.length; i ++) {
 				run(view._animateOutCallbacks[i]);
 			}
+
+			view._animateOutCallbacks = null;
 		};
 
 		if (view.$el) {
 
-			if (!view.get('isAnimatingOut')) {
+			if (!view.isAnimatingOut) {
 				view.willAnimateOut();
 			}
 
@@ -112,7 +150,7 @@
 			done();
 		}
 
-		view.set('isAnimatingOut', true);
+		view.isAnimatingOut = true;
 		view.set('element', null);
 
 		if (view._scheduledInsert) {
@@ -128,6 +166,9 @@
 		currentView : null,
 		activeView : null,
 		newView : null,
+		nextView : null,
+
+		animationSequence : 'sync', // sync, async, reverse
 
 		init : function () {
 
@@ -135,8 +176,8 @@
 
 			this._super();
 
-			if (currentView = this.get("currentView")) {
-				this.set("activeView", currentView);
+			if (currentView = this.get('currentView')) {
+				this.set('activeView', currentView);
 			}
 		},
 
@@ -147,7 +188,7 @@
 			var self,
 				newView,
 				oldView,
-				removeOldView;
+				asyncCount;
 
 			self = this;
 			oldView = this.get('activeView');
@@ -155,40 +196,63 @@
 
 			this.set('newView', newView);
 
-			removeOldView = function () {
+			function pushView (view) {
 
-				if (oldView.get('isAnimatingOut')) {
+				if (view ) {
+					self.pushObject(view);
+				}
+
+				self.set('activeView', view);
+			}
+
+			function removeView (view) {
+
+				if (view.isAnimatingOut) {
 					return;
 				}
 
-				if (oldView.get('isAnimatingIn')) {
-					oldView.addObserver('isAnimatingIn', self, '_currentViewDidChange');
+				if (!view.hasAnimatedIn) {
+					view.onAnimateIn(view.destroy.call(view));
 					return;
 				}
 
-				oldView.removeObserver('isAnimatingIn', self, '_currentViewDidChange');
-				oldView.destroy(function () {
-					self._pushNewView.apply(self);
-				});
+				view.destroy();
 			};
 
 			if (oldView) {
-				return removeOldView();
+
+				// reverse
+				if (this.animationSequence === 'reverse') {
+
+					newView.onAnimateIn(function () {
+						removeView(oldView);
+					});
+
+					pushView(newView);
+				}
+
+				// async
+				else if (this.animationSequence === 'async') {
+					removeView(oldView);
+					pushView(newView);
+				}
+
+				// sync
+				else {
+
+					oldView.onAnimateOut(function () {
+						pushView(self.get('currentView'));
+					});
+
+					removeView(oldView);
+				}
 			}
 
-			this._pushNewView();
-		}),
-
-		_pushNewView : function () {
-
-			var newView = this.get('newView');
-
-			if (newView) {
-				this.pushObject(newView);
+			else {
+				pushView(newView);
 			}
+		})
 
-			this.set("activeView", newView);
-		}
 	});
 
 })();

@@ -14,6 +14,7 @@
 		isAnimatingIn : false,
 		isAnimatingOut : false,
 		hasAnimatedIn : false,
+		hasAnimatedOut : false,
 
 		_animateInCallbacks : null,
 		_animateOutCallbacks : null,
@@ -42,7 +43,7 @@
 							self.hasAnimatedIn = true;
 							self.didAnimateIn();
 
-							if (self._animateInCallbacks) {
+							if (self._animateInCallbacks && self._animateInCallbacks.length) {
 								for (i = 0; i < self._animateInCallbacks.length; i ++) {
 									run(self._animateInCallbacks[i]);
 								}
@@ -89,79 +90,59 @@
 
 		destroy : function (done) {
 
-			var i;
+			var self = this,
+				_super = Ember.$.proxy(self._super, self);
 
 			this.onAnimateOut(done);
 
-			if (!this.hasAnimatedOut && this.animateOut !== run && this.$el) {
-				this.removedFromDOM = false;
-				this.transitionTo('inDOM');
+			if (self.isAnimatingOut) {
+				return;
 			}
 
-			else if (this.state === 'destroying') {
+			if (!self.$el || self.isDestroyed) {
 
-				for (i = 0; i < this._animateOutCallbacks.length; i ++) {
-					run(this._animateOutCallbacks[i]);
+				if (this._animateOutCallbacks && this._animateOutCallbacks.length) {
+					for (i = 0; i < this._animateOutCallbacks.length; i ++) {
+						run(this._animateOutCallbacks[i]);
+					}
 				}
 
 				this._animateOutCallbacks = null;
+
+				return _super();
 			}
 
-			return this._super();
-		}
-	});
-
-	Ember.View.states.hasElement.destroyElement = function (view) {
-
-		var self = this;
-
-		function done () {
-
-			var i;
-
-			view._notifyWillDestroyElement();
-
-			if (view.$el) {
-				view.$el.remove();
+			if (!self.$()) {
+				self.$ = function () {
+					return self.$el;
+				}
 			}
 
-			view.$el = null;
-			view.hasAnimatedOut = true;
+			self.willAnimateOut();
+			self.isAnimatingOut = true;
 
-			Ember.run.once(Ember.View, 'notifyMutationListeners');
+			self.animateOut(function () {
 
-			if (view._animateOutCallbacks != null) {
-				for (i = 0; i < view._animateOutCallbacks.length; i ++) {
-					run(view._animateOutCallbacks[i]);
+				self.isAnimatingOut = false;
+				self.hasAnimatedOut = true;
+
+				self.didAnimateOut();
+
+				if (self._animateOutCallbacks && self._animateOutCallbacks.length) {
+					for (i = 0; i < self._animateOutCallbacks.length; i ++) {
+						run(self._animateOutCallbacks[i]);
+					}
 				}
 
-				view._animateOutCallbacks = null;
-			}
-		};
+				_super();
 
-		if (view.$el) {
+				delete self.$;
+				delete self.$el;
+			});
 
-			if (!view.isAnimatingOut) {
-				view.willAnimateOut();
-			}
-
-			view.animateOut(done);
+			return self;
 		}
-
-		else {
-			done();
-		}
-
-		view.isAnimatingOut = true;
-		view.set('element', null);
-
-		if (view._scheduledInsert) {
-			Ember.run.cancel(view._scheduledInsert);
-			view._scheduledInsert = null;
-		}
-
-		return view;
-	};
+	});
 
 	Ember.ContainerView.reopen({
 
@@ -175,6 +156,8 @@
 		init : function () {
 
 			var currentView;
+
+			this.states.hasElement.destroyElement = Ember.View.states.destroyElement;
 
 			this._super();
 

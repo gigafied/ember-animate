@@ -157,8 +157,6 @@
 
 			var currentView;
 
-			this.states.hasElement.destroyElement = Ember.View.states.destroyElement;
-
 			this._super();
 
 			if (currentView = this.get('currentView')) {

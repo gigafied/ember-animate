@@ -130,11 +130,13 @@
 
 			Ember.run.once(Ember.View, 'notifyMutationListeners');
 
-			for (i = 0; i < view._animateOutCallbacks.length; i ++) {
-				run(view._animateOutCallbacks[i]);
-			}
+			if (view._animateOutCallbacks != null) {
+				for (i = 0; i < view._animateOutCallbacks.length; i ++) {
+					run(view._animateOutCallbacks[i]);
+				}
 
-			view._animateOutCallbacks = null;
+				view._animateOutCallbacks = null;
+			}
 		};
 
 		if (view.$el) {

@@ -90,16 +90,15 @@
 
 		destroy : function (done) {
 
-			var self = this,
-				_super = Ember.$.proxy(self._super, self);
+			var _super = this._super;
 
 			this.onAnimateOut(done);
 
-			if (self.isAnimatingOut) {
+			if (this.isAnimatingOut) {
 				return;
 			}
 
-			if (!self.$el || self.isDestroyed) {
+			if (!this.$el || this.isDestroyed) {
 
 				if (this._animateOutCallbacks && this._animateOutCallbacks.length) {
 					for (i = 0; i < this._animateOutCallbacks.length; i ++) {
@@ -109,38 +108,61 @@
 
 				this._animateOutCallbacks = null;
 
-				return _super();
+				return _super.call(this);
 			}
 
-			if (!self.$()) {
-				self.$ = function () {
-					return self.$el;
+			if (!this.$()) {
+				this.$ = function () {
+					return this.$el;
 				}
 			}
 
-			self.willAnimateOut();
-			self.isAnimatingOut = true;
+			this.willAnimateOut();
+			this.isAnimatingOut = true;
 
-			self.animateOut(function () {
+			this.animateOut(function () {
 
-				self.isAnimatingOut = false;
-				self.hasAnimatedOut = true;
+				this.isAnimatingOut = false;
+				this.hasAnimatedOut = true;
 
-				self.didAnimateOut();
+				this.didAnimateOut();
 
-				if (self._animateOutCallbacks && self._animateOutCallbacks.length) {
-					for (i = 0; i < self._animateOutCallbacks.length; i ++) {
-						run(self._animateOutCallbacks[i]);
+				if (this._animateOutCallbacks && this._animateOutCallbacks.length) {
+					for (i = 0; i < this._animateOutCallbacks.length; i ++) {
+						run(this._animateOutCallbacks[i]);
 					}
 				}
 
-				_super();
+				this.isDestroying = this.hasAnimatedOut;
 
-				delete self.$;
-				delete self.$el;
-			});
+				_super.call(this);
 
-			return self;
+				// destroy the element -- this will avoid each child view destroying
+				// the element over and over again...
+				if (!this.removedFromDOM) {
+					this.destroyElement();
+				}
+
+				// remove from parent if found. Don't call removeFromParent,
+				// as removeFromParent will try to remove the element from
+				// the DOM again.
+
+				if (this._parentView) {
+					this._parentView.removeChild(this);
+				}
+
+				this.isDestroying = true;
+
+				this.transitionTo('destroying', false);
+
+				delete this.$;
+				delete this.$el;
+
+				return this;
+
+			}.bind(this));
+
+			return this;
 		}
 	});
 

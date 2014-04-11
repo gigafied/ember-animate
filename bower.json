@@ -1,7 +1,7 @@
 {
   "name": "ember-animate",
   "main": "ember-animate.js",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "homepage": "https://github.com/gigafied/ember-animate",
   "authors": [
     "Taka Kojima <taka@gigafied.com>"

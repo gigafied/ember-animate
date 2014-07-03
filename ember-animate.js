@@ -133,20 +133,13 @@
 					}
 				}
 
-				this.isDestroying = this.hasAnimatedOut;
+				this.isDestroying = false;
 
 				_super.call(this);
-
-				// destroy the element -- this will avoid each child view destroying
-				// the element over and over again...
-				if (!this.removedFromDOM) {
-					this.destroyElement();
-				}
 
 				// remove from parent if found. Don't call removeFromParent,
 				// as removeFromParent will try to remove the element from
 				// the DOM again.
-
 				if (this._parentView) {
 					this._parentView.removeChild(this);
 				}

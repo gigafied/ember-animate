@@ -146,7 +146,7 @@
 
 				this.isDestroying = true;
 
-				this.transitionTo('destroying', false);
+				this._transitionTo('destroying', false);
 
 				delete this.$;
 				delete this.$el;

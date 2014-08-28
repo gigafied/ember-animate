@@ -25,6 +25,8 @@
 
 			this.$el = this.$();
 
+			this._transitionTo = this._transitionTo || this.transitionTo;
+
 			if (!self.isDestroyed) {
 
 				self.willAnimateIn();

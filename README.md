@@ -43,7 +43,7 @@ App.ExampleView = Ember.View.extend({
 	animateOut : function (done) {
 		this.$().fadeTo(500, 0, done);
 	}
-}
+});
 ````
 
 That's it! Super easy!

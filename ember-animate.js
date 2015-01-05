@@ -203,7 +203,7 @@
 				}
 				
 				if (!self.get('isDestroyed')) {
-				  self.set('activeView', view);
+					self.set('activeView', view);
 				}
 
 			}

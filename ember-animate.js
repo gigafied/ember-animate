@@ -201,10 +201,10 @@
 				if (view ) {
 					self.pushObject(view);
 				}
-
-        if (!self.get('isDestroyed')) {
+				
+				if (!self.get('isDestroyed')) {
 				  self.set('activeView', view);
-        }
+				}
 
 			}
 

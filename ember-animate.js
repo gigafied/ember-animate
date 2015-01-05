@@ -201,8 +201,11 @@
 				if (view ) {
 					self.pushObject(view);
 				}
+				
+				if (!self.get('isDestroyed')) {
+					self.set('activeView', view);
+				}
 
-				self.set('activeView', view);
 			}
 
 			function removeView (view) {

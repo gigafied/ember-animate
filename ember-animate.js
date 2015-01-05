@@ -1,261 +1,261 @@
 (function () {
 
-	var run,
-		destroying$;
+    var run,
+        destroying$;
 
-	var run = function (fn) {
-		if (fn && typeof fn === 'function') {
-			return fn();
-		}
-	};
+    var run = function (fn) {
+        if (fn && typeof fn === 'function') {
+            return fn();
+        }
+    };
 
-	Ember.View.reopen({
+    Ember.View.reopen({
 
-		isAnimatingIn : false,
-		isAnimatingOut : false,
-		hasAnimatedIn : false,
-		hasAnimatedOut : false,
+        isAnimatingIn : false,
+        isAnimatingOut : false,
+        hasAnimatedIn : false,
+        hasAnimatedOut : false,
 
-		_animateInCallbacks : null,
-		_animateOutCallbacks : null,
+        _animateInCallbacks : null,
+        _animateOutCallbacks : null,
 
-		_afterRender : function () {
+        _afterRender : function () {
 
-			var self = this;
+            var self = this;
 
-			this.$el = this.$();
+            this.$el = this.$();
 
-			this._transitionTo = this._transitionTo || this.transitionTo;
+            this._transitionTo = this._transitionTo || this.transitionTo;
 
-			if (!self.isDestroyed) {
+            if (!self.isDestroyed) {
 
-				self.willAnimateIn();
-				self.isAnimatingIn = true;
-				self.hasAnimatedIn = false;
+                self.willAnimateIn();
+                self.isAnimatingIn = true;
+                self.hasAnimatedIn = false;
 
-				Ember.run.next(function () {
+                Ember.run.next(function () {
 
-					if (!self.isDestroyed) {
+                    if (!self.isDestroyed) {
 
-						self.animateIn(function () {
+                        self.animateIn(function () {
 
-							var i;
+                            var i;
 
-							self.isAnimatingIn = false;
-							self.hasAnimatedIn = true;
-							self.didAnimateIn();
+                            self.isAnimatingIn = false;
+                            self.hasAnimatedIn = true;
+                            self.didAnimateIn();
 
-							if (self._animateInCallbacks && self._animateInCallbacks.length) {
-								for (i = 0; i < self._animateInCallbacks.length; i ++) {
-									run(self._animateInCallbacks[i]);
-								}
-							}
+                            if (self._animateInCallbacks && self._animateInCallbacks.length) {
+                                for (i = 0; i < self._animateInCallbacks.length; i ++) {
+                                    run(self._animateInCallbacks[i]);
+                                }
+                            }
 
-							self._animateInCallbacks = null;
+                            self._animateInCallbacks = null;
 
-						});
-					}
-				});
-			}
-		},
+                        });
+                    }
+                });
+            }
+        },
 
-		willInsertElement : function () {
-			Ember.run.scheduleOnce('afterRender', this, this._afterRender);
-			return this._super();
-		},
+        willInsertElement : function () {
+            Ember.run.scheduleOnce('afterRender', this, this._afterRender);
+            return this._super();
+        },
 
-		willAnimateIn : Ember.K,
-		willAnimateOut : Ember.K,
-		didAnimateIn : Ember.K,
-		didAnimateOut : Ember.K,
+        willAnimateIn : Ember.K,
+        willAnimateOut : Ember.K,
+        didAnimateIn : Ember.K,
+        didAnimateOut : Ember.K,
 
-		animateIn : run,
-		animateOut : run,
+        animateIn : run,
+        animateOut : run,
 
-		onAnimateIn : function (callback) {
+        onAnimateIn : function (callback) {
 
-			this._animateInCallbacks = this._animateInCallbacks || [];
+            this._animateInCallbacks = this._animateInCallbacks || [];
 
-			if (typeof callback === 'function') {
-				this._animateInCallbacks.push(callback);
-			}
-		},
+            if (typeof callback === 'function') {
+                this._animateInCallbacks.push(callback);
+            }
+        },
 
-		onAnimateOut : function (callback) {
+        onAnimateOut : function (callback) {
 
-			this._animateOutCallbacks = this._animateOutCallbacks || [];
+            this._animateOutCallbacks = this._animateOutCallbacks || [];
 
-			if (typeof callback === 'function') {
-				this._animateOutCallbacks.push(callback);
-			}
-		},
+            if (typeof callback === 'function') {
+                this._animateOutCallbacks.push(callback);
+            }
+        },
 
-		destroy : function (done) {
+        destroy : function (done) {
 
-			var _super = this._super;
+            var _super = this._super;
 
-			this.onAnimateOut(done);
+            this.onAnimateOut(done);
 
-			if (this.isAnimatingOut) {
-				return;
-			}
+            if (this.isAnimatingOut) {
+                return;
+            }
 
-			if (!this.$el || this.isDestroyed) {
+            if (!this.$el || this.isDestroyed) {
 
-				if (this._animateOutCallbacks && this._animateOutCallbacks.length) {
-					for (i = 0; i < this._animateOutCallbacks.length; i ++) {
-						run(this._animateOutCallbacks[i]);
-					}
-				}
+                if (this._animateOutCallbacks && this._animateOutCallbacks.length) {
+                    for (i = 0; i < this._animateOutCallbacks.length; i ++) {
+                        run(this._animateOutCallbacks[i]);
+                    }
+                }
 
-				this._animateOutCallbacks = null;
+                this._animateOutCallbacks = null;
 
-				return _super.call(this);
-			}
+                return _super.call(this);
+            }
 
-			if (!this.$()) {
-				this.$ = function () {
-					return this.$el;
-				}
-			}
+            if (!this.$()) {
+                this.$ = function () {
+                    return this.$el;
+                }
+            }
 
-			this.willAnimateOut();
-			this.isAnimatingOut = true;
+            this.willAnimateOut();
+            this.isAnimatingOut = true;
 
-			this.animateOut(function () {
+            this.animateOut(function () {
 
-				this.isAnimatingOut = false;
-				this.hasAnimatedOut = true;
+                this.isAnimatingOut = false;
+                this.hasAnimatedOut = true;
 
-				this.didAnimateOut();
+                this.didAnimateOut();
 
-				if (this._animateOutCallbacks && this._animateOutCallbacks.length) {
-					for (i = 0; i < this._animateOutCallbacks.length; i ++) {
-						run(this._animateOutCallbacks[i]);
-					}
-				}
+                if (this._animateOutCallbacks && this._animateOutCallbacks.length) {
+                    for (i = 0; i < this._animateOutCallbacks.length; i ++) {
+                        run(this._animateOutCallbacks[i]);
+                    }
+                }
 
-				this.isDestroying = false;
+                this.isDestroying = false;
 
-				_super.call(this);
+                _super.call(this);
 
-				// remove from parent if found. Don't call removeFromParent,
-				// as removeFromParent will try to remove the element from
-				// the DOM again.
-				if (this._parentView) {
-					this._parentView.removeChild(this);
-				}
+                // remove from parent if found. Don't call removeFromParent,
+                // as removeFromParent will try to remove the element from
+                // the DOM again.
+                if (this._parentView) {
+                    this._parentView.removeChild(this);
+                }
 
-				this.isDestroying = true;
+                this.isDestroying = true;
 
-				this._transitionTo('destroying', false);
+                this._transitionTo('destroying', false);
 
-				delete this.$;
-				delete this.$el;
+                delete this.$;
+                delete this.$el;
 
-				return this;
+                return this;
 
-			}.bind(this));
+            }.bind(this));
 
-			return this;
-		}
-	});
+            return this;
+        }
+    });
 
-	Ember.ContainerView.reopen({
+    Ember.ContainerView.reopen({
 
-		currentView : null,
-		activeView : null,
-		newView : null,
-		nextView : null,
+        currentView : null,
+        activeView : null,
+        newView : null,
+        nextView : null,
 
-		animationSequence : 'sync', // sync, async, reverse
+        animationSequence : 'sync', // sync, async, reverse
 
-		init : function () {
+        init : function () {
 
-			var currentView;
+            var currentView;
 
-			this._super();
+            this._super();
 
-			if (currentView = this.get('currentView')) {
-				this.set('activeView', currentView);
-			}
-		},
+            if (currentView = this.get('currentView')) {
+                this.set('activeView', currentView);
+            }
+        },
 
-		_currentViewWillChange : Ember.K,
+        _currentViewWillChange : Ember.K,
 
-		_currentViewDidChange : Ember.observer('currentView', function () {
+        _currentViewDidChange : Ember.observer('currentView', function () {
 
-			var self,
-				newView,
-				oldView,
-				asyncCount;
+            var self,
+                newView,
+                oldView,
+                asyncCount;
 
-			self = this;
-			oldView = this.get('activeView');
-			newView = this.get('currentView');
+            self = this;
+            oldView = this.get('activeView');
+            newView = this.get('currentView');
 
-			this.set('newView', newView);
+            this.set('newView', newView);
 
-			function pushView (view) {
+            function pushView (view) {
 
-				if (view ) {
-					self.pushObject(view);
-				}
-				
-				if (!self.get('isDestroyed')) {
-					self.set('activeView', view);
-				}
+                if (view ) {
+                    self.pushObject(view);
+                }
 
-			}
+                if (!self.get('isDestroyed')) {
+                    self.set('activeView', view);
+                }
 
-			function removeView (view) {
+            }
 
-				if (view.isAnimatingOut) {
-					return;
-				}
+            function removeView (view) {
 
-				if (!view.hasAnimatedIn) {
-					view.onAnimateIn(view.destroy.call(view));
-					return;
-				}
+                if (view.isAnimatingOut) {
+                    return;
+                }
 
-				view.destroy();
-			};
+                if (!view.hasAnimatedIn) {
+                    view.onAnimateIn(view.destroy.call(view));
+                    return;
+                }
 
-			if (oldView) {
+                view.destroy();
+            };
 
-				// reverse
-				if (this.animationSequence === 'reverse') {
+            if (oldView) {
 
-					newView.onAnimateIn(function () {
-						removeView(oldView);
-					});
+                // reverse
+                if (this.animationSequence === 'reverse') {
 
-					pushView(newView);
-				}
+                    newView.onAnimateIn(function () {
+                        removeView(oldView);
+                    });
 
-				// async
-				else if (this.animationSequence === 'async') {
-					removeView(oldView);
-					pushView(newView);
-				}
+                    pushView(newView);
+                }
 
-				// sync
-				else {
+                // async
+                else if (this.animationSequence === 'async') {
+                    removeView(oldView);
+                    pushView(newView);
+                }
 
-					oldView.onAnimateOut(function () {
-						pushView(self.get('currentView'));
-					});
+                // sync
+                else {
 
-					removeView(oldView);
-				}
-			}
+                    oldView.onAnimateOut(function () {
+                        pushView(self.get('currentView'));
+                    });
 
-			else {
-				pushView(newView);
-			}
-		})
+                    removeView(oldView);
+                }
+            }
 
-	});
+            else {
+                pushView(newView);
+            }
+        })
+
+    });
 
 })();

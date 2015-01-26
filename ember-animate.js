@@ -30,8 +30,8 @@
             if (!self.isDestroyed) {
 
                 self.willAnimateIn();
-                self.isAnimatingIn = true;
-                self.hasAnimatedIn = false;
+                self.set('isAnimatingIn', true);
+                self.set('hasAnimatedIn', false);
 
                 Ember.run.next(function () {
 
@@ -41,8 +41,8 @@
 
                             var i;
 
-                            self.isAnimatingIn = false;
-                            self.hasAnimatedIn = true;
+                            self.set('isAnimatingIn', false);
+                            self.set('hasAnimatedIn', true);
                             self.didAnimateIn();
 
                             if (self._animateInCallbacks && self._animateInCallbacks.length) {
@@ -51,7 +51,7 @@
                                 }
                             }
 
-                            self._animateInCallbacks = null;
+                            self.set('_animateInCallbacks', null);
 
                         });
                     }
@@ -74,7 +74,7 @@
 
         onAnimateIn : function (callback) {
 
-            this._animateInCallbacks = this._animateInCallbacks || [];
+            this.set('_animateInCallbacks', this._animateInCallbacks || []);
 
             if (typeof callback === 'function') {
                 this._animateInCallbacks.push(callback);
@@ -108,7 +108,7 @@
                     }
                 }
 
-                this._animateOutCallbacks = null;
+                this.set('_animateOutCallbacks', null);
 
                 return _super.call(this);
             }
@@ -120,12 +120,12 @@
             }
 
             this.willAnimateOut();
-            this.isAnimatingOut = true;
+            this.set('isAnimatingOut', true);
 
             this.animateOut(function () {
 
-                this.isAnimatingOut = false;
-                this.hasAnimatedOut = true;
+                this.set('isAnimatingOut', false);
+                this.set('hasAnimatedOut', true);
 
                 this.didAnimateOut();
 
@@ -135,7 +135,7 @@
                     }
                 }
 
-                this.isDestroying = false;
+                this.set('isDestroying', false);
 
                 _super.call(this);
 
@@ -146,7 +146,7 @@
                     this._parentView.removeChild(this);
                 }
 
-                this.isDestroying = true;
+                this.set('isDestroying', true);
 
                 this._transitionTo('destroying', false);
 
@@ -202,10 +202,7 @@
                     self.pushObject(view);
                 }
 
-                if (!self.get('isDestroyed')) {
-                    self.set('activeView', view);
-                }
-
+                self.set('activeView', view);
             }
 
             function removeView (view) {

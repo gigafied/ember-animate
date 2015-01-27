@@ -46,6 +46,12 @@ App.ExampleView = Ember.View.extend({
 });
 ````
 
+If you're using Ember-CLI, you can install this library as an Addon, like so:
+
+```js
+ember install:addon ember-animate
+```
+
 That's it! Super easy!
 
 ####Ember Animate exposes 6 different methods for you:

@@ -1,6 +1,6 @@
 {
   "name": "ember-animate",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "description": "Animations for Ember.js",
   "directories": {
     "doc": "doc",

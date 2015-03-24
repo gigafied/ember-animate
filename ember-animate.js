@@ -2,17 +2,8 @@
 
     var run,
         destroying$,
-        EmberAnimateView,
-        EmberAnimateContainerView,
         root,
         objectTypes;
-
-    objectTypes = {
-        'function': true,
-        'object': true
-    };
-
-    root = (objectTypes[typeof window] && window !== (this && this.window)) ? window : this;
 
     run = function (fn) {
         if (fn && typeof fn === 'function') {
@@ -20,9 +11,9 @@
         }
     };
 
-    EmberAnimateView = Ember.View.extend();
+    Ember.AnimateView = Ember.View.extend();
 
-    EmberAnimateView.reopen({
+    Ember.AnimateView.reopen({
 
         isAnimatingIn : false,
         isAnimatingOut : false,
@@ -174,9 +165,9 @@
         }
     });
 
-    EmberAnimateContainerView = Ember.ContainerView.extend();
+    Ember.AnimateContainerView = Ember.ContainerView.extend();
 
-    EmberAnimateContainerView.reopen({
+    Ember.AnimateContainerView.reopen({
 
         currentView : null,
         activeView : null,
@@ -272,8 +263,5 @@
         })
 
     });
-
-    root.EmberAnimateView = EmberAnimateView;
-    root.EmberAnimateContainerView = EmberAnimateContainerView;
 
 })();

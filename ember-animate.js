@@ -1,15 +1,28 @@
 (function () {
 
     var run,
-        destroying$;
+        destroying$,
+        EmberAnimateView,
+        EmberAnimateContainerView,
+        root,
+        objectTypes;
 
-    var run = function (fn) {
+    objectTypes = {
+        'function': true,
+        'object': true
+    };
+
+    root = (objectTypes[typeof window] && window !== (this && this.window)) ? window : this;
+
+    run = function (fn) {
         if (fn && typeof fn === 'function') {
             return fn();
         }
     };
 
-    Ember.View.reopen({
+    EmberAnimateView = Ember.View.extend();
+
+    EmberAnimateView.reopen({
 
         isAnimatingIn : false,
         isAnimatingOut : false,
@@ -161,7 +174,9 @@
         }
     });
 
-    Ember.ContainerView.reopen({
+    EmberAnimateContainerView = Ember.ContainerView.extend();
+
+    EmberAnimateContainerView.reopen({
 
         currentView : null,
         activeView : null,
@@ -257,5 +272,8 @@
         })
 
     });
+
+    root.EmberAnimateView = EmberAnimateView;
+    root.EmberAnimateContainerView = EmberAnimateContainerView;
 
 })();

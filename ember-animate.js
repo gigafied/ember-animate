@@ -1,15 +1,19 @@
 (function () {
 
     var run,
-        destroying$;
+        destroying$,
+        root,
+        objectTypes;
 
-    var run = function (fn) {
+    run = function (fn) {
         if (fn && typeof fn === 'function') {
             return fn();
         }
     };
 
-    Ember.View.reopen({
+    Ember.AnimateView = Ember.View.extend();
+
+    Ember.AnimateView.reopen({
 
         isAnimatingIn : false,
         isAnimatingOut : false,
@@ -161,7 +165,9 @@
         }
     });
 
-    Ember.ContainerView.reopen({
+    Ember.AnimateContainerView = Ember.ContainerView.extend();
+
+    Ember.AnimateContainerView.reopen({
 
         currentView : null,
         activeView : null,

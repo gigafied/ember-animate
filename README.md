@@ -54,35 +54,35 @@ ember install:addon ember-animate
 
 That's it! Super easy!
 
-####Ember Animate exposes 6 different methods for you:
+#### Ember Animate exposes 6 different methods for you:
 
-#####`willAnimateIn()`
+##### `willAnimateIn()`
 
 Called before `animateIn()`. Lets you set CSS properties before the view actually gets rendered. Use this to set the starting point for your `animateIn()`.
 
 You can get accurate calculated properties here (i.e. width and height).
 
-#####`willAnimateOut()`
+##### `willAnimateOut()`
 
 Called before `animateOut()` gets called.
 
-#####`didAnimateIn()`
+##### `didAnimateIn()`
 
 Called after `animateIn()` completes.
 
-#####`didAnimateOut()`
+##### `didAnimateOut()`
 
 Called after `animateOut()` completes.
 
-#####`animateIn(callback)`
+##### `animateIn(callback)`
 
 Use this hook to animate in. Just make sure to call the callback function once your animation completes.
 
-#####`animateOut(callback)`
+##### `animateOut(callback)`
 
 Use this hook to animate out. Just make sure to call the callback function once your animation completes.
 
-####Animation Sequences
+#### Animation Sequences
 
 By default, outlets and ContainerViews use the 'sync' animationSequence. This is out-then-in and is the most common use case. However, you can have your out and in animations trigger at the same time if you want by using 'async'. You can also have your views animate in then out by using 'reverse'.
 
@@ -95,7 +95,7 @@ or
 
 _______________
 
-#####IMPORTANT NOTE : When using Ember Animate, don't implement custom `destroy()` methods. Any teardown logic for views should be moved to `didAnimateOut()`. The reason for this is the animation out is triggered by the `destroy()` method (because this isn't an offical part of Ember, it's the only way to ensure all views get their animations triggered when being removed from the DOM).
+##### IMPORTANT NOTE : When using Ember Animate, don't implement custom `destroy()` methods. Any teardown logic for views should be moved to `didAnimateOut()`. The reason for this is the animation out is triggered by the `destroy()` method (because this isn't an offical part of Ember, it's the only way to ensure all views get their animations triggered when being removed from the DOM).
 Also if you implement `willInsertElement()` make sure you call `this._super()`. However, in almost all instances you could just use `willAnimateIn()` as a hook instead.
 _______________
 
